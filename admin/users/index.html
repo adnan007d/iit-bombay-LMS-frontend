@@ -65,6 +65,11 @@
         if (users.length < 12) {
           next.disabled = true;
         }
+
+        if (users.length === 0) {
+          document.querySelector("tbody").innerHTML =
+            `<tr><td colspan="6">No Users found</td></tr>`;
+        }
       }
 
       function disableAll() {

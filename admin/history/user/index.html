@@ -71,6 +71,10 @@
         if (histories.length < 12) {
           next.disabled = true;
         }
+        if (histories.length === 0) {
+          document.querySelector("tbody").innerHTML =
+            `<tr><td colspan="6">No history found</td></tr>`;
+        }
       }
 
       function disableAll() {

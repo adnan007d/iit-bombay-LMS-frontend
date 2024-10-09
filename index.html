@@ -125,6 +125,10 @@
         if (books.length < 12) {
           next.disabled = true;
         }
+        if (books.length === 0) {
+          document.querySelector("tbody").innerHTML =
+            `<tr><td colspan="6">No Books found</td></tr>`;
+        }
       }
 
       function disableAll() {
