@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>User History</title>
+    <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="/js/fetch.js"></script>
+    <script src="/js/protect.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/navbar.js" defer></script>
+  </head>
+  <body class="container p-5">
+    <div class="d-flex gap-2 align-items-center justify-content-end">
+      <div class="spinner-border" id="loading" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <button id="prev" class="btn btn-primary">Prev</button>
+      <span id="page">1</span>
+      <button id="next" class="btn btn-primary">Next</button>
+    </div>
+    <section>
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Book Title</th>
+            <th scope="col">Book Author</th>
+            <th scope="col">Borrowed At</th>
+            <th scope="col">Returned At</th>
+            <th scope="col">Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+    <script src="/js/pagination.js" type="text/javascript"></script>
+    <script>
+      const id = new URLSearchParams(window.location.search).get("id");
+      const loading = document.getElementById("loading");
+
+      document.addEventListener("userPopulated", (e) => {
+        populateHistory();
+      });
+
+      async function populateHistory() {
+        const tbody = document.querySelector("tbody");
+        disableAll();
+        loading.style.display = "block";
+        const histories = await getUserHistory(id, pageNumber);
+        if (histories) {
+          let html = "";
+          histories.forEach(
+            (history, i) =>
+              (html += `         <tr>
+                      <th scope="row">${(pageNumber - 1) * 12 + i + 1}</th>
+                      <td>${history.title}</td>
+                      <td>${history.author}</td>
+                      <td>${new Date(history.borrowed_at).toLocaleString()}</td>
+                      <td>${history.returned_at ? new Date(history.returned_at).toLocaleString() : "Not Returned"}</td>
+                      <td>
+                          <a href="/admin/history/book?id=${history.book_id}" class="btn btn-primary">View Book History</a>
+                      </td>
+                    </tr>
+          `)
+          );
+          tbody.innerHTML = html;
+        }
+        enableAll();
+        loading.style.display = "none";
+        if (histories.length < 12) {
+          next.disabled = true;
+        }
+      }
+
+      function disableAll() {
+        prev.disabled = true;
+        next.disabled = true;
+      }
+
+      function enableAll() {
+        prev.disabled = pageNumber === 1; // disable prev if page is 1
+        next.disabled = false;
+      }
+
+      document.addEventListener("page-changed", (e) => {
+        console.log("Here");
+        const pageNumber = e.detail.pageNumber;
+        populateHistory(id, pageNumber);
+      });
+    </script>
+  </body>
+</html>

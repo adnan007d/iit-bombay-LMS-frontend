@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Add Edit User</title>
+    <link href="/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <script src="/js/fetch.js"></script>
+    <script src="/js/protect.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/navbar.js" defer></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12">
+          <h1 id="page-title">User</h1>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12">
+          <form>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input
+                type="email"
+                class="form-control"
+                id="email"
+                name="email"
+                placeholder="Enter email"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                class="form-control"
+                id="password"
+                name="password"
+                placeholder="Enter password"
+                minlength="8"
+                required
+              />
+            </div>
+            <small id="passwordHelp" class="form-text text-muted">
+              Your password must be at least 8 characters long.
+            </small>
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                name="username"
+                placeholder="Enter username"
+                minlength="3"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <lable for="role">Role</lable>
+              <input
+                type="radio"
+                id="role"
+                name="role"
+                value="LIBRARIAN"
+                required
+              />
+              <label for="role">Librarian</label>
+              <input
+                type="radio"
+                id="role"
+                name="role"
+                value="MEMBER"
+                required
+              />
+              <label for="role">Member</label>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    <script>
+      const form = document.querySelector("form");
+      const submitButton = document.querySelector("button[type='submit']");
+      const pageTitle = document.getElementById("page-title");
+      let formUser;
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        submitButton.disabled = true;
+        const formData = new FormData(form);
+        console.log(formData);
+
+        const url = formUser
+          ? `/api/users/${formUser.id}`
+          : "/api/users/signup";
+        const method = formUser ? "PUT" : "POST";
+        const res = await myFetch(url, {
+          method,
+          body: new URLSearchParams(formData),
+        });
+
+        if (res.ok) {
+          alert(`User ${formUser ? "updated" : "added"} successfully`);
+          window.location.href = "/admin/users";
+        } else {
+          const error = await res.json();
+          alert(error.message);
+        }
+        submitButton.disabled = false;
+      });
+
+      document.addEventListener("userPopulated", (e) => {
+        handleAddEdit();
+      });
+
+      async function handleAddEdit() {
+        const id = new URLSearchParams(window.location.search).get("id");
+        if (!id) {
+          submitButton.innerText = "Add User";
+          pageTitle.innerText = "Add User";
+        } else {
+          submitButton.innerText = "Update User";
+          pageTitle.innerText = "Update User";
+          formUser = await getAUser(id);
+          if (formUser) {
+            form.querySelector("input[name='email']").value = formUser.email;
+            form.querySelector("input[name='username']").value =
+              formUser.username;
+            if (formUser.role === "LIBRARIAN") {
+              form.querySelector("input[value='LIBRARIAN']").checked = true;
+            } else {
+              form.querySelector("input[value='MEMBER']").checked = true;
+            }
+          } else {
+            alert("User not found");
+            window.location.href = "/";
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
